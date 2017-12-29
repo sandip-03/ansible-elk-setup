@@ -1,0 +1,61 @@
+---
+#
+# Installing Kibana
+#
+
+# Install Kibana
+
+- name: Creating installation directory
+  file:
+    path: "{{ elk_home }}"
+    state: directory
+    owner: elk
+    group: elk
+
+- name: Download Kibana tar
+  get_url:
+    url: https://artifacts.elastic.co/downloads/kibana/kibana-6.1.1-linux-x86_64.tar.gz
+    dest: "{{ prod_dir }}"
+    mode: 0777
+
+- name: Unarchive kibana-6.1.1-linux-x86_64.tar.gz
+  unarchive:
+    src: "{{ prod_dir }}/kibana-6.1.1-linux-x86_64.tar.gz"
+    dest: "{{ elk_home }}"
+    remote_src: yes
+
+# Configurations
+
+- name: Updating the config file to allow outside access
+  lineinfile:
+   destfile: "{{ elk_home }}/kibana-6.1.1-linux-x86_64/config/kibana.yml"
+   regexp: 'server.host:'
+   line: 'server.host: 0.0.0.0'
+
+- name: Defining server port
+  lineinfile:
+   destfile: "{{ elk_home }}/kibana-6.1.1-linux-x86_64/config/kibana.yml"
+   regexp: 'server.port:'
+   line: 'server.port: 5601'
+    
+- name: Defining Elasticsearch URL
+  lineinfile:
+   destfile: "{{ elk_home }}/kibana-6.1.1-linux-x86_64/config/kibana.yml"
+   regexp: 'elasticsearch.url:'
+   line: 'elasticsearch.url: "http://localhost:9200"'
+   
+# Starting Kibana
+
+- name: Copy kibana start script
+  copy:
+    src=kibana.sh
+    dest="{{ scripts_dir }}/kibana.sh"
+    owner=elk
+    group=elk
+    mode=0755
+
+- name: start kibana
+  command: "{{ scripts_dir }}/kibana.sh"
+  async: 45
+  poll: 0
+

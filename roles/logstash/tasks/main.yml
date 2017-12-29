@@ -1,0 +1,48 @@
+---
+#
+# Installing Logstash
+#
+
+# Install Logstash
+
+- name: Creating installation directory
+  file:
+    path: "{{ elk_home }}"
+    state: directory
+    owner: elk
+    group: elk
+
+- name: Download logstash tar
+  get_url:
+    url: https://artifacts.elastic.co/downloads/logstash/logstash-6.1.1.tar.gz
+    dest: "{{ prod_dir }}"
+    mode: 0777
+
+- name: Unarchive logstash-6.1.1.tar.gz
+  unarchive:
+    src: "{{ prod_dir }}/logstash-6.1.1.tar.gz"
+    dest: "{{ elk_home }}"
+    remote_src: yes
+
+- name: Copy logstash filter configuration
+  template:
+    src=logstash.conf.j2
+    dest="{{ elk_home }}/logstash-6.1.1/bin/logstash.conf"
+    owner=elk
+    group=elk
+    mode=0644
+
+# Start Logstash
+- name: Copy logstash start script
+  copy:
+    src=logstash.sh
+    dest="{{ scripts_dir }}/logstash.sh"
+    owner=elk
+    group=elk
+    mode=0755
+
+- name: start logstash
+  command: "{{ scripts_dir }}/logstash.sh"
+  async: 45
+  poll: 0
+  

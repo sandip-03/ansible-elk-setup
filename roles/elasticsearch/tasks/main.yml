@@ -1,0 +1,61 @@
+---
+#
+# Installing Elasticsearch
+#
+
+# Install Elasticsearch
+
+- name: Creating installation directory
+  file:
+    path: "{{ elk_home }}"
+    state: directory
+    owner: elk
+    group: elk
+
+- name: Download Elasticsearch tar
+  get_url:
+    url: https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-6.1.1.tar.gz
+    dest: "{{ prod_dir }}"
+    mode: 0777
+
+- name: Unarchive elasticsearch.tar.gz
+  unarchive:
+    src: "{{ prod_dir }}/elasticsearch-6.1.1.tar.gz"
+    dest: "{{ elk_home }}"
+    remote_src: yes
+
+# Update Elasticsearch config file to allow access (to secure Elasticsearch, bind to 'localhost'). 
+
+- name: Updating the config file to allow outside access
+  lineinfile:
+   destfile: "{{ elk_home }}/elasticsearch-6.1.1/config/elasticsearch.yml"
+   regexp: 'network.host:'
+   line: 'network.host: 0.0.0.0'
+ 
+# Update Elasticsearch port in config file 
+
+- name: Updating the port in config file 
+  lineinfile:
+   destfile: "{{ elk_home }}/elasticsearch-6.1.1/config/elasticsearch.yml"
+   regexp: 'http.port:'
+   line: 'http.port: 9200'    
+
+- name: Updating the bootstrap.system_call_filter in config file 
+  lineinfile:
+   destfile: "{{ elk_home }}/elasticsearch-6.1.1/config/elasticsearch.yml"
+   line: 'bootstrap.system_call_filter: false'
+
+# Start Elasticsearch
+- name: Copy elasticsearch start script
+  copy:
+    src=elasticsearch.sh
+    dest="{{ scripts_dir }}/elasticsearch.sh"
+    owner=elk
+    group=elk
+    mode=0755
+
+- name: start elasticsearch
+  command: "{{ scripts_dir }}/elasticsearch.sh"
+  async: 45
+  poll: 0
+  

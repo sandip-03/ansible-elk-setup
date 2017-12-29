@@ -1,0 +1,6 @@
+---
+# Variables listed here are applicable to all host groups
+
+prod_dir: /hboprod
+elk_home: /hboprod/elk
+scripts_dir: /hboprod/elk/scripts

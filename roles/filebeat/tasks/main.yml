@@ -1,0 +1,51 @@
+---
+#
+# Installing Filebeat
+#
+
+# Install Filebeat
+
+- name: Creating installation directory
+  file:
+    path: "{{ elk_home }}"
+    state: directory
+    owner: elk
+    group: elk
+
+- name: Download filebeat tar
+  get_url:
+    url: https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-6.1.1-linux-x86_64.tar.gz
+    dest: "{{ prod_dir }}"
+    mode: 0777
+
+- name: Unarchive filebeat-6.1.1-linux-x86_64.tar.gz
+  unarchive:
+    src: "{{ prod_dir }}/filebeat-6.1.1-linux-x86_64.tar.gz"
+    dest: "{{ elk_home }}"
+    remote_src: yes
+
+# Configurations
+
+- name: Copy filebeat configuration file
+  copy:
+    src=filebeat.yml
+    dest="{{ elk_home }}/filebeat-6.1.1-linux-x86_64/filebeat.yml"
+    owner=elk
+    group=elk
+    mode=0600
+   
+# Starting Filebeat
+
+- name: Copy filebeat start script
+  copy:
+    src=filebeat.sh
+    dest="{{ scripts_dir }}/filebeat.sh"
+    owner=elk
+    group=elk
+    mode=0755
+
+- name: start filebeat
+  command: "{{ scripts_dir }}/filebeat.sh"
+  async: 45
+  poll: 0
+

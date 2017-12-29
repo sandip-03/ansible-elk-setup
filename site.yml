@@ -1,0 +1,15 @@
+---
+#
+# Playbook to install the ELK stack + Beats
+#
+- name: Install elasticsearch
+  hosts: elkservers
+  remote_user: elk
+  environment:
+    JAVA_HOME: /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.151-1.b12.el6_9.x86_64
+  roles:
+  - { role: elasticsearch }
+  - { role: logstash }
+  - { role: kibana }
+  - { role: filebeat }
+
